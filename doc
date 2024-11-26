@@ -1,0 +1,12 @@
+# Documentation Folder
+
+This folder contains all the documentation related to the TrailService micro-service.
+
+### Planned Files:
+1. `report.pdf`: Final report for Assignment 2.
+2. `ERD.png`: Entity-Relationship Diagram for the database design.
+3. `sequence_diagram.png`: UML sequence diagram for API operations.
+4. `design_notes.md`: Notes on the system's design decisions.
+
+### Purpose:
+The `docs` folder will store project documentation, diagrams, and the final report submission.
