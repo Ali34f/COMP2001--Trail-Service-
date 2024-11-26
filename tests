@@ -1,0 +1,11 @@
+# Tests Folder
+
+This folder contains test scripts and resources for validating the TrailService micro-service.
+
+### Planned Files:
+1. `test_database.sql`: SQL script to test database integrity and CRUD operations.
+2. `test_api.py`: Python script for testing API endpoints (e.g., Postman equivalent).
+3. `postman_collection.json`: Postman collection for testing API endpoints.
+
+### Purpose:
+The `tests` folder is for managing and organizing test cases to ensure the micro-service works as expected.
