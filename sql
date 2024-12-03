@@ -11,3 +11,4 @@ This folder contains all the SQL scripts required for the TrailService micro-ser
 
 ### Purpose:
 The `sql` folder is dedicated to managing the database structure and functionality.
+hi my name is shush wallah
