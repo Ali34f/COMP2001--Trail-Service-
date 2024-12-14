@@ -35,17 +35,17 @@ CREATE TABLE CW2.trails
     Length SMALLINT NOT NULL,
     Elevation SMALLINT NOT NULL,
     RouteType VARCHAR(50) NOT NULL,
-    CityID INT NOT NULL REFERENCES CW1.trail_location(LocationID),
-    CountyID INT NOT NULL REFERENCES CW1.trail_location(LocationID),
-    CountryID INT NOT NULL REFERENCES CW1.trail_location(LocationID),
-    UserID INT NOT NULL REFERENCES CW1.[user](ID),
-    -- Corrected to reference CW1.[user]
+    CityID INT NOT NULL REFERENCES CW2.trail_location(LocationID),
+    CountyID INT NOT NULL REFERENCES CW2.trail_location(LocationID),
+    CountryID INT NOT NULL REFERENCES CW2.trail_location(LocationID),
+    UserID INT NOT NULL REFERENCES CW2.[user](ID),
+    -- Corrected to reference CW2.[user]
     CreatedAt DATETIME NOT NULL DEFAULT GETDATE()
 );
 
 CREATE TABLE CW2.trail_point
 (
-    TrailID INT REFERENCES CW1.trails(TrailID),
+    TrailID INT REFERENCES CW2.trails(TrailID),
     Position SMALLINT NOT NULL CHECK(Position > 0),
     Longitude REAL NOT NULL CHECK(Longitude >= -180.0 AND Longitude <= 180),
     Latitude REAL NOT NULL CHECK(Latitude >= -90.0 AND Latitude <= 90),
@@ -55,8 +55,8 @@ CREATE TABLE CW2.trail_point
 CREATE TABLE CW2.comment
 (
     CommentID INT PRIMARY KEY IDENTITY (1,1),
-    UserID INT NOT NULL REFERENCES CW1.[user](ID),
-    -- Corrected to reference CW1.[user]
-    TrailID INT NOT NULL REFERENCES CW1.trails(TrailID),
+    UserID INT NOT NULL REFERENCES CW2.[user](ID),
+    -- Corrected to reference CW2.[user]
+    TrailID INT NOT NULL REFERENCES CW2.trails(TrailID),
     CommentText TEXT NOT NULL
 );
