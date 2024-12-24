@@ -1,0 +1,57 @@
+DROP TABLE IF EXISTS CW2.trail_feature;
+DROP TABLE IF EXISTS CW2.feature;
+DROP TABLE IF EXISTS CW2.trail_point;
+DROP TABLE IF EXISTS CW2.trails;
+DROP TABLE IF EXISTS CW2.[user];
+
+-- USER Table
+CREATE TABLE CW2.[user]
+(
+    UserID INT PRIMARY KEY IDENTITY (1,1),
+    Email_address VARCHAR(100) NOT NULL UNIQUE,
+    Role VARCHAR(50) NOT NULL
+);
+
+-- TRAILS Table
+CREATE TABLE CW2.trails
+(
+    TrailID INT PRIMARY KEY IDENTITY (1,1),
+    Trail_name VARCHAR(100) NOT NULL,
+    Trail_Summary VARCHAR(500),
+    Trail_Description NVARCHAR(MAX) NOT NULL,
+    Difficulty VARCHAR(20),
+    Location VARCHAR(150),
+    Length DECIMAL(6,2) NOT NULL,
+    Elevation_gain DECIMAL(6,2) NOT NULL,
+    Route_type VARCHAR(50) NOT NULL,
+    OwnerID INT NOT NULL REFERENCES CW2.[user](UserID),
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE()
+);
+
+-- TRAIL_POINT Table
+CREATE TABLE CW2.trail_point
+(
+    TrailID INT REFERENCES CW2.trails(TrailID) ON DELETE CASCADE,
+    Pt1_Lat DECIMAL(9,6) NOT NULL CHECK(Pt1_Lat BETWEEN -90.0 AND 90.0),
+    Pt1_Long DECIMAL(9,6) NOT NULL CHECK(Pt1_Long BETWEEN -180.0 AND 180.0),
+    Pt1_Desc VARCHAR(255),
+    Pt2_Lat DECIMAL(9,6) NOT NULL CHECK(Pt2_Lat BETWEEN -90.0 AND 90.0),
+    Pt2_Long DECIMAL(9,6) NOT NULL CHECK(Pt2_Long BETWEEN -180.0 AND 180.0),
+    Pt2_Desc VARCHAR(255),
+    PRIMARY KEY (TrailID)
+);
+
+-- FEATURE Table
+CREATE TABLE CW2.feature
+(
+    Trail_FeatureID INT PRIMARY KEY IDENTITY (1,1),
+    Trail_Feature VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- TRAIL-FEATURE Table (Linking Table)
+CREATE TABLE CW2.trail_feature
+(
+    TrailID INT NOT NULL REFERENCES CW2.trails(TrailID) ON DELETE CASCADE,
+    Trail_FeatureID INT NOT NULL REFERENCES CW2.feature(Trail_FeatureID) ON DELETE CASCADE,
+    PRIMARY KEY (TrailID, Trail_FeatureID)
+);
