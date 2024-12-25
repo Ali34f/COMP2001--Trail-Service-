@@ -29,7 +29,7 @@ if __name__ == "__main__":
         try:
             # Testing the connection with a sample query
             cursor = conn.cursor()
-            cursor.execute("SELECT TOP 5 * FROM CW2.trails")  # Replace with your table name if different
+            cursor.execute("SELECT TOP 5 * FROM CW2.trails")
             rows = cursor.fetchall()
             for row in rows:
                 print(row)
