@@ -2,7 +2,8 @@ from authenticator import authenticate_user
 
 # Test the authenticator with a valid user
 print("Testing valid credentials...")
-user_details = authenticate_user("grace@plymouth.ac.uk", "ISAD123!")
+user_details = authenticate_user("grace@plymouth.ac.uk", "ISAD123!",)
+
 print(f"Valid credentials test result: {user_details}")
 
 # Test the authenticator with invalid credentials

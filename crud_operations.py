@@ -5,12 +5,10 @@ import logging
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def create_trail(conn, trail_name, trail_summary, trail_description, difficulty, location, length, elevation_gain, route_type, owner_id):
-    """
-    Create a new trail in the database.
-    """
     try:
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             EXEC CW2.CreateTrail
             @Trail_name = ?, 
             @Trail_Summary = ?, 
@@ -21,12 +19,14 @@ def create_trail(conn, trail_name, trail_summary, trail_description, difficulty,
             @Elevation_gain = ?, 
             @Route_type = ?, 
             @OwnerID = ?""",
-            trail_name, trail_summary, trail_description, difficulty, location, length, elevation_gain, route_type, owner_id)
+            trail_name, trail_summary, trail_description, difficulty, location, length, elevation_gain, route_type, owner_id
+        )
         conn.commit()
-        logging.info("Trail created successfully!")
     except pyodbc.Error as e:
-        logging.error(f"Error creating trail: {e}")
-        raise Exception(f"Error creating trail: {e}")
+        logging.error(f"Database error occurred: {e}")
+        raise Exception("Database error occurred while creating trail.")
+
+
 
 def read_trail(conn, trail_id=None, trail_name=None, owner_id=None):
     """
