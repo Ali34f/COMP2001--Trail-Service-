@@ -57,6 +57,13 @@
     .hidden {
       display: none;
     }
+    .token-box {
+      word-wrap: break-word;
+      background: #f1f1f1;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
@@ -64,8 +71,8 @@
     <h1>Trail Management System</h1>
   </header>
   <main>
-    <h2>Welcome</h2>
     <div id="authSection">
+      <h2>Welcome</h2>
       <label for="email">Email:</label>
       <input type="email" id="email" required>
 
@@ -78,42 +85,47 @@
 
     <div id="adminActions" class="hidden">
       <h2>Admin Actions</h2>
+      <p>Your Access Token:</p>
+      <div id="accessToken" class="token-box"></div>
+
       <form id="trailForm">
         <h3>Create a New Trail</h3>
         <label for="trailName">Trail Name:</label>
-        <input type="text" id="trailName" name="trailName" required>
+        <input type="text" id="trailName" required>
 
         <label for="trailSummary">Trail Summary:</label>
-        <textarea id="trailSummary" name="trailSummary" required></textarea>
+        <textarea id="trailSummary" required></textarea>
 
         <label for="trailDescription">Trail Description:</label>
-        <textarea id="trailDescription" name="trailDescription" required></textarea>
+        <textarea id="trailDescription" required></textarea>
 
         <label for="difficulty">Difficulty:</label>
-        <select id="difficulty" name="difficulty">
+        <select id="difficulty">
           <option value="Easy">Easy</option>
           <option value="Moderate">Moderate</option>
           <option value="Hard">Hard</option>
         </select>
 
         <label for="location">Location:</label>
-        <input type="text" id="location" name="location" required>
+        <input type="text" id="location" required>
 
         <label for="length">Length (in km):</label>
-        <input type="number" id="length" name="length" step="0.1" required>
+        <input type="number" id="length" step="0.1" required>
 
         <label for="elevation">Elevation Gain (in m):</label>
-        <input type="number" id="elevation" name="elevation" required>
+        <input type="number" id="elevation" required>
 
         <label for="routeType">Route Type:</label>
-        <input type="text" id="routeType" name="routeType" required>
+        <input type="text" id="routeType" required>
 
         <label for="ownerID">Owner ID:</label>
-        <input type="number" id="ownerID" name="ownerID" required>
+        <input type="number" id="ownerID" required>
+
+        <label for="createToken">Enter Token:</label>
+        <input type="text" id="createToken" placeholder="Paste your token here" required>
 
         <button type="submit">Create Trail</button>
       </form>
-      <p id="responseMessage"></p>
 
       <form id="updateTrailForm">
         <h3>Update a Trail</h3>
@@ -149,6 +161,9 @@
         <label for="updateRouteType">Route Type:</label>
         <input type="text" id="updateRouteType">
 
+        <label for="updateToken">Enter Token:</label>
+        <input type="text" id="updateToken" placeholder="Paste your token here" required>
+
         <button type="submit">Update Trail</button>
       </form>
 
@@ -156,6 +171,9 @@
         <h3>Delete a Trail</h3>
         <label for="deleteTrailID">Trail ID:</label>
         <input type="number" id="deleteTrailID" required>
+
+        <label for="deleteToken">Enter Token:</label>
+        <input type="text" id="deleteToken" placeholder="Paste your token here" required>
 
         <button type="submit">Delete Trail</button>
       </form>
@@ -175,7 +193,7 @@
   </main>
 
   <script>
-    let role = null;
+    let token = null;
 
     document.getElementById("loginButton").addEventListener("click", async () => {
       const email = document.getElementById("email").value;
@@ -193,11 +211,10 @@
         const result = await response.json();
         if (response.ok) {
           document.getElementById("loginMessage").textContent = "Login successful!";
-          role = result.role;
-          if (role === "admin") {
-            document.getElementById("adminActions").classList.remove("hidden");
-          }
+          token = result.token;
+          document.getElementById("accessToken").textContent = token;
           document.getElementById("authSection").classList.add("hidden");
+          document.getElementById("adminActions").classList.remove("hidden");
         } else {
           document.getElementById("loginMessage").textContent = result.error;
           document.getElementById("loginMessage").style.color = "red";
@@ -208,6 +225,7 @@
       }
     });
 
+    // POST: Create Trail
     document.getElementById("trailForm").addEventListener("submit", async (event) => {
       event.preventDefault();
       const formData = {
@@ -221,38 +239,24 @@
         Route_type: document.getElementById("routeType").value,
         OwnerID: parseInt(document.getElementById("ownerID").value)
       };
+      const userToken = document.getElementById("createToken").value;
       try {
         const response = await fetch("/trails", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${userToken}`
           },
           body: JSON.stringify(formData)
         });
         const result = await response.json();
-        document.getElementById("responseMessage").textContent = result.message || result.error;
-        if (result.error) {
-          document.getElementById("responseMessage").style.color = "red";
-        }
+        alert(result.message || result.error);
       } catch (error) {
-        document.getElementById("responseMessage").textContent = "An error occurred.";
-        document.getElementById("responseMessage").style.color = "red";
+        alert("An error occurred.");
       }
     });
 
-    document.getElementById("viewAllTrailsButton").addEventListener("click", async () => {
-      const response = await fetch("/trails");
-      const trails = await response.json();
-      document.getElementById("allTrails").textContent = JSON.stringify(trails, null, 2);
-    });
-
-    document.getElementById("viewSpecificTrailButton").addEventListener("click", async () => {
-      const trailID = document.getElementById("specificTrailID").value;
-      const response = await fetch(`/trails/${trailID}`);
-      const trail = await response.json();
-      document.getElementById("specificTrail").textContent = JSON.stringify(trail, null, 2);
-    });
-
+    // PUT: Update Trail
     document.getElementById("updateTrailForm").addEventListener("submit", async (event) => {
       event.preventDefault();
       const trailID = document.getElementById("updateTrailID").value;
@@ -266,11 +270,13 @@
         Elevation_gain: parseFloat(document.getElementById("updateElevation").value),
         Route_type: document.getElementById("updateRouteType").value
       };
+      const userToken = document.getElementById("updateToken").value;
       try {
         const response = await fetch(`/trails/${trailID}`, {
           method: "PUT",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${userToken}`
           },
           body: JSON.stringify(formData)
         });
@@ -281,12 +287,17 @@
       }
     });
 
+    // DELETE: Delete Trail
     document.getElementById("deleteTrailForm").addEventListener("submit", async (event) => {
       event.preventDefault();
       const trailID = document.getElementById("deleteTrailID").value;
+      const userToken = document.getElementById("deleteToken").value;
       try {
         const response = await fetch(`/trails/${trailID}`, {
-          method: "DELETE"
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${userToken}`
+          }
         });
         const result = await response.json();
         alert(result.message || result.error);

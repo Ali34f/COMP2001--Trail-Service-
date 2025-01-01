@@ -4,27 +4,45 @@ import logging
 # Set up logging
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
+
 def create_trail(conn, trail_name, trail_summary, trail_description, difficulty, location, length, elevation_gain, route_type, owner_id):
+    """
+    Create a new trail in the database.
+    """
     try:
         cursor = conn.cursor()
-        cursor.execute(
-            """
+        logging.debug("Executing CreateTrail procedure...")
+
+        # Execute the stored procedure or SQL query
+        cursor.execute("""
             EXEC CW2.CreateTrail
-            @Trail_name = ?, 
-            @Trail_Summary = ?, 
-            @Trail_Description = ?, 
-            @Difficulty = ?, 
-            @Location = ?, 
-            @Length = ?, 
-            @Elevation_gain = ?, 
-            @Route_type = ?, 
-            @OwnerID = ?""",
-            trail_name, trail_summary, trail_description, difficulty, location, length, elevation_gain, route_type, owner_id
-        )
+                @Trail_name = ?, 
+                @Trail_Summary = ?, 
+                @Trail_Description = ?, 
+                @Difficulty = ?, 
+                @Location = ?, 
+                @Length = ?, 
+                @Elevation_gain = ?, 
+                @Route_type = ?, 
+                @OwnerID = ?
+        """, trail_name, trail_summary, trail_description, difficulty, location, length, elevation_gain, route_type, owner_id)
+
+        # Commit the transaction
         conn.commit()
+        logging.debug("Trail created successfully in the database.")
+
+        # Return a success message as a dictionary
+        return {"status": "success", "message": "Trail created successfully"}
+
     except pyodbc.Error as e:
-        logging.error(f"Database error occurred: {e}")
-        raise Exception("Database error occurred while creating trail.")
+        # Log and raise database errors as JSON-serializable dictionary
+        logging.error(f"Database Error: {e}")
+        return {"status": "error", "message": f"Database Error: {e}"}
+
+    except Exception as e:
+        # Log and raise general errors as JSON-serializable dictionary
+        logging.error(f"Error creating trail: {e}")
+        return {"status": "error", "message": f"Error creating trail: {e}"}
 
 
 
