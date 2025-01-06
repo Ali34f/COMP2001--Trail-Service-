@@ -305,6 +305,31 @@
         alert("An error occurred.");
       }
     });
+
+    // GET: View All Trails
+    document.getElementById("viewAllTrailsButton").addEventListener("click", async () => {
+      try {
+        const response = await fetch("/trails");
+        const trails = await response.json();
+        const allTrailsDiv = document.getElementById("allTrails");
+        allTrailsDiv.textContent = JSON.stringify(trails, null, 2);
+      } catch (error) {
+        alert("An error occurred while fetching all trails.");
+      }
+    });
+
+    // GET: View Specific Trail
+    document.getElementById("viewSpecificTrailButton").addEventListener("click", async () => {
+      const trailID = document.getElementById("specificTrailID").value;
+      try {
+        const response = await fetch(`/trails/${trailID}`);
+        const trail = await response.json();
+        const specificTrailDiv = document.getElementById("specificTrail");
+        specificTrailDiv.textContent = JSON.stringify(trail, null, 2);
+      } catch (error) {
+        alert("An error occurred while fetching the trail.");
+      }
+    });
   </script>
 </body>
 </html>

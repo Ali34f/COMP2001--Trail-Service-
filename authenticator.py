@@ -1,6 +1,6 @@
 import requests
 import logging
-
+ 
 logging.basicConfig(level=logging.DEBUG)
 
 def authenticate_user(email, password):

@@ -17,7 +17,7 @@ CORS(app)
 
 # Initialize API and Swagger
 api = Api(app)
-swagger = Swagger(app, template_file="swagger.yml")  # Link your YAML file here
+swagger = Swagger(app, template_file="swagger.yml")
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -371,4 +371,5 @@ api.add_resource(TrailList, "/trails")
 api.add_resource(TrailDetail, "/trails/<int:trail_id>")
 
 if __name__ == "__main__":
+    print("Swagger UI available at: http://127.0.0.1:5000/apidocs")
     app.run(debug=True)
