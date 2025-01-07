@@ -7,22 +7,26 @@ The **Trail Management System** is a web-based API developed to facilitate the m
 
 ## 🔧 Features
 
-- **Authentication**
-  - Role-based access control (e.g., Admin privileges for creating, updating, and deleting trails).
-- **CRUD Operations**
-  - Create, Read, Update, and Delete trail records.
+- **Authentication & Authorization**
+  - Role-based access control using JWT (e.g., Admin privileges for creating, updating, and deleting trails).
+- **Trail Mananagement**
+  - Full CRUD operations for trail records.
 - **Database Integration**
-  - Microsoft SQL Server hosted on Azure.
-- **API Documentation**
-  - Includes interactive Swagger API documentation.
+  - Powered by Microsoft SQL Server hosted on Azure.
+- **Interactive API Documentation**
+  - Swagger UI integration for easy API testing and exploration.
+- **Front-end Integration**
+  - Simple fornt-end interface using HTML, CSS, and JavaScript for managing trails.
 
 ---
 
 ## 🎨 Technologies Used
 
-- **Backend**: Flask, Flask-RESTful, Swagger
+- **Backend**: Python,Flask, Flask-RESTful
 - **Database**: Microsoft SQL Server (Azure-hosted)
-- **Tools**: Postman for API testing, Visual Studio Code for development
+- **Documenation**: Swagger (Flasgger)
+- **Frontend**: HTML, CSS, JavaScript
+- **Tools**: Postman for API testing, Visual Studio Code 
 
 ---
 
@@ -72,9 +76,12 @@ pip install -r requirements.txt
 python app.py
 ```
 The application will run on [http://127.0.0.1:5000](http://127.0.0.1:5000).
+#### Interact with the API
+- Open [http://127.0.0.1:5000/apidocs](http://127.0.0.1:5000/apidocs) for Swagger UI.
+- User Postman to test API ednpoints or interact with the front end at [http://127.0.0.1:5000](http://127.0.0.1:5000).
 
 ### 2. Test the API in Postman
-#### Example Request for Creating a Trail
+#### Create a Trail (Admin Only)
 - **Endpoint**: `POST /trails`
 - **Request Body**:
 ```json
@@ -89,7 +96,12 @@ The application will run on [http://127.0.0.1:5000](http://127.0.0.1:5000).
     "Route_type": "Loop",
     "OwnerID": 1
 }
+
+
+
+
 ```
+
 
 ---
 
@@ -127,9 +139,8 @@ The application will run on [http://127.0.0.1:5000](http://127.0.0.1:5000).
 ---
 
 ## 🌍 Future Enhancements
-- Implement token-based authentication using JWT.
-- Add support for frontend frameworks like React.
-- Enable trail image uploads.
+- Integrate advanced analystics for trail popularity and usage.
+- Implement chachig for faster trail retrieval
 
 ---
 
