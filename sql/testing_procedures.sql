@@ -22,22 +22,28 @@ BEGIN
     SELECT @TestTrailID = MAX(TrailID)
     FROM CW2.trails
     WHERE Trail_name = 'Test Trail';
+
+    -- Error handling for missing TrailID
+    IF @TestTrailID IS NULL
+    BEGIN
+        PRINT 'No Test Trail found. Aborting tests.';
+        RETURN;
+    END;
+
     PRINT 'Test TrailID fetched: ' + CAST(@TestTrailID AS VARCHAR);
 
     -- Step 3: Test ReadTrail Procedure
     PRINT 'Testing ReadTrail Procedure...';
     EXEC CW2.ReadTrail @TrailID = @TestTrailID;
-    -- Fetch the specific trail
     EXEC CW2.ReadTrail @Trail_name = 'Test';
-    -- Fetch trails containing 'Test' in the name
     EXEC CW2.ReadTrail @OwnerID = 1;
-    -- Fetch trails owned by user with ID = 1
 
     -- Step 4: Test UpdateTrail Procedure
     PRINT 'Testing UpdateTrail Procedure...';
     EXEC CW2.UpdateTrail 
         @TrailID = @TestTrailID,
-        @Trail_name = 'Updated Test Trail Name';
+        @Trail_name = 'Updated Test Trail Name',
+        @Trail_Summary = 'Updated Summary';
 
     -- Step 5: Verify UpdateTrail
     PRINT 'Verifying UpdateTrail...';

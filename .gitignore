@@ -29,3 +29,5 @@ __pycache__/
 venv/
 .env/
 .virtualenv/
+__pycache__/crud_operations.cpython-313.pyc
+__pycache__/crud_operations.cpython-313.pyc

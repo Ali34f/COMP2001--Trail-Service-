@@ -1,6 +1,7 @@
 import requests
 import logging
- 
+
+# Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
 def authenticate_user(email, password):
@@ -21,11 +22,14 @@ def authenticate_user(email, password):
             return None
 
         # Handle specific response format
-        if isinstance(user_details, list):
-            if len(user_details) == 2 and user_details[0] == "Verified" and user_details[1] == "True":
-                logging.info("Authentication successful.")
-                return {"role": "admin", "user_id": 1}  # Adjust role and user_id as per your API
-            elif len(user_details) == 2 and user_details[0] == "Verified" and user_details[1] == "False":
+        if isinstance(user_details, list) and len(user_details) == 2:
+            if user_details[0] == "Verified" and user_details[1] == "True":
+                # Assign roles based on email
+                role = "admin" if email == "grace@plymouth.ac.uk" else "user"
+                user_id = 1 if role == "admin" else 2  # Example UserID for admin and non-admin
+                logging.info(f"Authentication successful. Role: {role}")
+                return {"role": role, "user_id": user_id}
+            else:
                 logging.info("Authentication failed: Invalid credentials.")
                 return None
 

@@ -27,8 +27,3 @@ BEGIN
     PRINT 'Trail deleted successfully.';
 END;
 GO
-
-
-
-
-

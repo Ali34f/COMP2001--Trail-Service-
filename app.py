@@ -55,6 +55,7 @@ def generate_token(user_id, role):
     }
     return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
+
 @app.route("/")
 def home():
     """Serves the index.html for the front-end."""
@@ -63,28 +64,6 @@ def home():
 @app.route("/auth", methods=["POST"])
 def login():
     """Handles user login and returns a JWT token."""
-    """
-    ---
-    tags:
-      - Authentication
-    summary: Login and get JWT token
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            email:
-              type: string
-            password:
-              type: string
-    responses:
-      200:
-        description: Login successful
-      401:
-        description: Authentication failed
-    """
     data = request.json
     email = data.get("email")
     password = data.get("password")
@@ -96,7 +75,7 @@ def login():
         return jsonify({"error": "Authentication failed."}), 401
 
     token = generate_token(user["user_id"], user["role"])
-    return jsonify({"message": "Login successful!", "token": token})
+    return jsonify({"message": "Login successful!", "token": token, "role": user["role"]})
 
 # Resource: Trails
 class TrailList(Resource):
@@ -193,7 +172,7 @@ class TrailList(Resource):
             ]
             for field in required_fields:
                 if field not in data:
-                    return jsonify({"error": f"Missing required field: {field}"}), 400
+                    return jsonify({"error": "Missing required field: {field}"}), 400
 
             result = create_trail(
                 conn,
@@ -212,6 +191,7 @@ class TrailList(Resource):
             logging.error(f"Error creating trail: {e}")
             return jsonify({"error": str(e)}), 500
 
+# Resource: Trail Detail
 class TrailDetail(Resource):
     def get(self, trail_id):
         """Fetches a specific trail by ID."""

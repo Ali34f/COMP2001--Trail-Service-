@@ -121,9 +121,6 @@
         <label for="ownerID">Owner ID:</label>
         <input type="number" id="ownerID" required>
 
-        <label for="createToken">Enter Token:</label>
-        <input type="text" id="createToken" placeholder="Paste your token here" required>
-
         <button type="submit">Create Trail</button>
       </form>
 
@@ -161,9 +158,6 @@
         <label for="updateRouteType">Route Type:</label>
         <input type="text" id="updateRouteType">
 
-        <label for="updateToken">Enter Token:</label>
-        <input type="text" id="updateToken" placeholder="Paste your token here" required>
-
         <button type="submit">Update Trail</button>
       </form>
 
@@ -171,9 +165,6 @@
         <h3>Delete a Trail</h3>
         <label for="deleteTrailID">Trail ID:</label>
         <input type="number" id="deleteTrailID" required>
-
-        <label for="deleteToken">Enter Token:</label>
-        <input type="text" id="deleteToken" placeholder="Paste your token here" required>
 
         <button type="submit">Delete Trail</button>
       </form>
@@ -194,6 +185,7 @@
 
   <script>
     let token = null;
+    let userRole = null;
 
     document.getElementById("loginButton").addEventListener("click", async () => {
       const email = document.getElementById("email").value;
@@ -212,9 +204,13 @@
         if (response.ok) {
           document.getElementById("loginMessage").textContent = "Login successful!";
           token = result.token;
+          userRole = result.role;
           document.getElementById("accessToken").textContent = token;
           document.getElementById("authSection").classList.add("hidden");
-          document.getElementById("adminActions").classList.remove("hidden");
+
+          if (userRole === "admin") {
+            document.getElementById("adminActions").classList.remove("hidden");
+          }
         } else {
           document.getElementById("loginMessage").textContent = result.error;
           document.getElementById("loginMessage").style.color = "red";
@@ -228,6 +224,10 @@
     // POST: Create Trail
     document.getElementById("trailForm").addEventListener("submit", async (event) => {
       event.preventDefault();
+      if (userRole !== "admin") {
+        alert("Unauthorized: Only admins can create trails.");
+        return;
+      }
       const formData = {
         Trail_name: document.getElementById("trailName").value,
         Trail_Summary: document.getElementById("trailSummary").value,
@@ -239,13 +239,12 @@
         Route_type: document.getElementById("routeType").value,
         OwnerID: parseInt(document.getElementById("ownerID").value)
       };
-      const userToken = document.getElementById("createToken").value;
       try {
         const response = await fetch("/trails", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${userToken}`
+            "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify(formData)
         });
@@ -259,6 +258,10 @@
     // PUT: Update Trail
     document.getElementById("updateTrailForm").addEventListener("submit", async (event) => {
       event.preventDefault();
+      if (userRole !== "admin") {
+        alert("Unauthorized: Only admins can update trails.");
+        return;
+      }
       const trailID = document.getElementById("updateTrailID").value;
       const formData = {
         Trail_name: document.getElementById("updateTrailName").value,
@@ -270,13 +273,12 @@
         Elevation_gain: parseFloat(document.getElementById("updateElevation").value),
         Route_type: document.getElementById("updateRouteType").value
       };
-      const userToken = document.getElementById("updateToken").value;
       try {
         const response = await fetch(`/trails/${trailID}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${userToken}`
+            "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify(formData)
         });
@@ -290,13 +292,16 @@
     // DELETE: Delete Trail
     document.getElementById("deleteTrailForm").addEventListener("submit", async (event) => {
       event.preventDefault();
+      if (userRole !== "admin") {
+        alert("Unauthorized: Only admins can delete trails.");
+        return;
+      }
       const trailID = document.getElementById("deleteTrailID").value;
-      const userToken = document.getElementById("deleteToken").value;
       try {
         const response = await fetch(`/trails/${trailID}`, {
           method: "DELETE",
           headers: {
-            "Authorization": `Bearer ${userToken}`
+            "Authorization": `Bearer ${token}`
           }
         });
         const result = await response.json();
