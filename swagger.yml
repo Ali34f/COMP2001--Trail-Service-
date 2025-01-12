@@ -40,6 +40,8 @@ paths:
                 type: "string"
               token:
                 type: "string"
+              role:
+                type: "string"
         400:
           description: "Email and password are required."
         401:

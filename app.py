@@ -64,6 +64,43 @@ def home():
 @app.route("/auth", methods=["POST"])
 def login():
     """Handles user login and returns a JWT token."""
+    """
+    ---
+    tags:
+      - Authentication
+    summary: Authenticate User
+    description: Authenticates the user and returns a JWT token.
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - email
+            - password
+          properties:
+            email:
+              type: string
+            password:
+              type: string
+    responses:
+      200:
+        description: Login successful
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            token:
+              type: string
+            role:
+              type: string
+      400:
+        description: Email and password are required.
+      401:
+        description: Authentication failed.
+    """
     data = request.json
     email = data.get("email")
     password = data.get("password")
