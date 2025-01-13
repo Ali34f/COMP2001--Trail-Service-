@@ -20,13 +20,14 @@ The **Trail Management System** is a web-based API developed to facilitate the m
 
 ---
 
-## 🎨 Technologies Used
+## 💻 Technologies Used
 
 - **Backend**: Python,Flask, Flask-RESTful
 - **Database**: Microsoft SQL Server (Azure-hosted)
 - **Documenation**: Swagger (Flasgger)
 - **Frontend**: HTML, CSS, JavaScript
 - **Tools**: Postman for API testing, Visual Studio Code 
+- **Deployment**: Docker
 
 ---
 
@@ -41,6 +42,7 @@ The **Trail Management System** is a web-based API developed to facilitate the m
 3. Microsoft SQL Server
 4. Visual Studio Code
 5. Postman (for testing)
+6. Docker (for containerized deployment)
 
 ---
 
@@ -66,6 +68,19 @@ pip install -r requirements.txt
 
 ### 4. Configure Database Connection
 - Update the `database_connection.py` file with your Azure SQL database connection string.
+---
+### Running with Docker 
+
+1.  Pull the Docker Image 
+```bash
+docker pull jahinkhan/comp2001-trail-service:latest
+```
+2.  Run the Docker Container
+```bash
+docker run -d -p 5000:5000 jahinkhan/comp2001-trail-service:latest
+```
+3.  Access the Applicattion open http://127.0.0.1:5000/apidocs  in your browser 
+
 
 ---
 
@@ -123,7 +138,17 @@ The application will run on [http://127.0.0.1:5000](http://127.0.0.1:5000).
 └── templates/
     └── index.html        # Frontend template
 ```
+---
 
+## 🔗 Key Endpoints
+| **Method** | **Endpoint**       | **Description**             | **Authentication** |
+|------------|--------------------|-----------------------------|--------------------|
+| `POST`     | `/auth`            | Authenticate user and get JWT | No                |
+| `GET`      | `/trails`          | Retrieve all trails         | Yes               |
+| `GET`      | `/trails/{id}`     | Retrieve trail by ID        | Yes               |
+| `POST`     | `/trails`          | Create a new trail          | Admin             |
+| `PUT`      | `/trails/{id}`     | Update trail by ID          | Admin             |
+| `DELETE`   | `/trails/{id}`     | Delete trail by ID          | Admin             |
 ---
 
 ## 🔧 Troubleshooting
@@ -138,9 +163,10 @@ The application will run on [http://127.0.0.1:5000](http://127.0.0.1:5000).
 
 ---
 
-## 🌍 Future Enhancements
+## 🔮 Future Enhancements
 - Integrate advanced analystics for trail popularity and usage.
 - Implement chachig for faster trail retrieval
+- Mobile App Integration: Extend functionality for mobile devices 
 
 ---
 

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, abort, make_response
+from flask import Flask, request, jsonify, render_template, abort, make_response, redirect
 from flask_restful import Api, Resource
 from flask_cors import CORS
 from flasgger import Swagger
@@ -45,6 +45,7 @@ def validate_token(auth_header):
     except jwt.InvalidTokenError:
         abort(403, description="Invalid token")
 
+
 # Function to generate JWT tokens
 def generate_token(user_id, role):
     """Generates a JWT token for a user."""
@@ -53,7 +54,11 @@ def generate_token(user_id, role):
         "role": role,
         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Token expires in 1 hour
     }
-    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+    token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+
+    # PyJWT returns the token as a byte string, so decode it to a string
+    return token if isinstance(token, str) else token.decode("utf-8")
+
 
 @app.errorhandler(403)
 def forbidden(error):
@@ -72,10 +77,9 @@ def internal_error(error):
     return jsonify({"error": "Internal server error"}), 500
 
 @app.route("/")
-def home():
-    """Serves the index.html for the front-end."""
-    return render_template("index.html")
-
+def redirect_to_swagger():
+    """Redirects the base route to Swagger UI."""
+    return redirect("/apidocs")
 @app.route("/auth", methods=["POST"])
 def login():
     """Handles user login and returns a JWT token."""
@@ -228,7 +232,7 @@ class TrailList(Resource):
             ]
             for field in required_fields:
                 if field not in data:
-                    abort(400, description=f"Missing required field: {field}")
+                    return make_response(jsonify(f"Missing required field: {field}"), 400)
 
             # Create trail
             result = create_trail(
@@ -417,4 +421,5 @@ api.add_resource(TrailDetail, "/trails/<int:trail_id>")
 
 if __name__ == "__main__":
     print("Swagger UI available at: http://127.0.0.1:5000/apidocs")
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
+
