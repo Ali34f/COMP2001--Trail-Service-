@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, abort, make_response
 from flask_restful import Api, Resource
 from flask_cors import CORS
 from flasgger import Swagger
@@ -34,16 +34,16 @@ if conn is None:
 def validate_token(auth_header):
     """Validates the JWT token from the Authorization header."""
     if not auth_header or not auth_header.startswith("Bearer "):
-        return {"error": "Unauthorized access"}, 403
+        abort(403, description="Unauthorized access")
 
     token = auth_header.split(" ")[1]
     try:
         decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
         return decoded_token
     except jwt.ExpiredSignatureError:
-        return {"error": "Token has expired"}, 401
+        abort(401, description="Token has expired")
     except jwt.InvalidTokenError:
-        return {"error": "Invalid token"}, 403
+        abort(403, description="Invalid token")
 
 # Function to generate JWT tokens
 def generate_token(user_id, role):
@@ -55,6 +55,21 @@ def generate_token(user_id, role):
     }
     return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
+@app.errorhandler(403)
+def forbidden(error):
+    return jsonify({"error": error.description}), 403
+
+@app.errorhandler(401)
+def unauthorized(error):
+    return jsonify({"error": error.description}), 401
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({"error": error.description}), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({"error": "Internal server error"}), 500
 
 @app.route("/")
 def home():
@@ -114,6 +129,7 @@ def login():
     token = generate_token(user["user_id"], user["role"])
     return jsonify({"message": "Login successful!", "token": token, "role": user["role"]})
 
+
 # Resource: Trails
 class TrailList(Resource):
     def get(self):
@@ -149,7 +165,7 @@ class TrailList(Resource):
             return jsonify(trails)
         except Exception as e:
             logging.error(f"Error fetching trails: {e}")
-            return jsonify({"error": str(e)}), 500
+            abort(500)
 
     def post(self):
         """Allows admin to create a new trail."""
@@ -188,19 +204,22 @@ class TrailList(Resource):
                 OwnerID:
                   type: integer
         responses:
-          201:
+          200:
             description: Trail created successfully
           403:
             description: Unauthorized access
+          400:
+            description: Missing required fields
         """
+        # Extract Authorization Header and validate the token
         auth_header = request.headers.get("Authorization")
         decoded_token = validate_token(auth_header)
-        if isinstance(decoded_token, tuple):
-            return jsonify(decoded_token[0]), decoded_token[1]
 
+        # Ensure user has admin privileges
         if decoded_token["role"].lower() != "admin":
-            return jsonify({"error": "Unauthorized access: Admin privileges required."}), 403
+            abort(403, description="Unauthorized access: Admin privileges required.")
 
+        # Parse and validate request data
         data = request.json
         try:
             required_fields = [
@@ -209,8 +228,9 @@ class TrailList(Resource):
             ]
             for field in required_fields:
                 if field not in data:
-                    return jsonify({"error": "Missing required field: {field}"}), 400
+                    abort(400, description=f"Missing required field: {field}")
 
+            # Create trail
             result = create_trail(
                 conn,
                 data["Trail_name"],
@@ -223,12 +243,12 @@ class TrailList(Resource):
                 data["Route_type"],
                 data["OwnerID"]
             )
-            return jsonify({"message": "Trail created successfully!"})
+            return make_response(jsonify({"message": "Trail created successfully"}), 201)
         except Exception as e:
             logging.error(f"Error creating trail: {e}")
             return jsonify({"error": str(e)}), 500
 
-# Resource: Trail Detail
+
 class TrailDetail(Resource):
     def get(self, trail_id):
         """Fetches a specific trail by ID."""
@@ -267,10 +287,10 @@ class TrailDetail(Resource):
                     "CreatedAt": str(row.CreatedAt)
                 }
                 return jsonify(trail)
-            return jsonify({"message": "Trail not found"}), 404
+            return make_response(jsonify({"error":"Trail not found"}), 404)
         except Exception as e:
             logging.error(f"Error fetching trail: {e}")
-            return jsonify({"error": str(e)}), 500
+            return make_response(jsonify({"error": "Internal Server error"}), 500)
 
     def put(self, trail_id):
         """Allows admin to update a trail by ID."""
@@ -315,17 +335,22 @@ class TrailDetail(Resource):
             description: Trail updated successfully
           403:
             description: Unauthorized access
+          404:
+            description: Trail not found
         """
         auth_header = request.headers.get("Authorization")
         decoded_token = validate_token(auth_header)
-        if isinstance(decoded_token, tuple):
-            return jsonify(decoded_token[0]), decoded_token[1]
 
         if decoded_token["role"].lower() != "admin":
-            return jsonify({"error": "Unauthorized access: Admin privileges required."}), 403
+            abort(403, description="Unauthorized access: Admin privileges required.")
 
         data = request.json
         try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM CW2.trails WHERE TrailID = ?", (trail_id,))
+            if cursor.fetchone() is None:
+                return make_response(jsonify({"error": "Trail not found"}), 404)
+
             update_trail(
                 conn,
                 trail_id,
@@ -342,7 +367,7 @@ class TrailDetail(Resource):
             return jsonify({"message": "Trail updated successfully!"})
         except Exception as e:
             logging.error(f"Error updating trail: {e}")
-            return jsonify({"error": str(e)}), 500
+            abort(500)
 
     def delete(self, trail_id):
         """Allows admin to delete a trail by ID."""
@@ -370,18 +395,21 @@ class TrailDetail(Resource):
         """
         auth_header = request.headers.get("Authorization")
         decoded_token = validate_token(auth_header)
-        if isinstance(decoded_token, tuple):
-            return jsonify(decoded_token[0]), decoded_token[1]
 
         if decoded_token["role"].lower() != "admin":
-            return jsonify({"error": "Unauthorized access: Admin privileges required."}), 403
+            abort(403, description="Unauthorized access: Admin privileges required.")
 
         try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM CW2.trails WHERE TrailID = ?", (trail_id,))
+            if cursor.fetchone() is None:
+                return make_response(jsonify({"error": "Trail not found"}), 404)
+
             delete_trail(conn, trail_id)
             return jsonify({"message": "Trail deleted successfully!"})
         except Exception as e:
             logging.error(f"Error deleting trail: {e}")
-            return jsonify({"error": str(e)}), 500
+            abort(500)
 
 # Register resources
 api.add_resource(TrailList, "/trails")
